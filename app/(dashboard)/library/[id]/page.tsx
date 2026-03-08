@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Book as BookIcon, Calendar, Clock, Edit, Star, Trash2 } from "lucide-react";
 import { BookStatusToggle } from "@/components/books/BookStatusToggle";
+import { DeleteBookButton } from "@/components/books/DeleteBookButton";
 import { format } from "date-fns";
 
 export default async function BookDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -75,12 +76,14 @@ export default async function BookDetailsPage({ params }: { params: Promise<{ id
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <button className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+                <Link
+                  href={`/library/${book.id}/edit`}
+                  className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+                  title="Edit Book"
+                >
                   <Edit className="w-5 h-5" />
-                </button>
-                <button className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                </Link>
+                <DeleteBookButton bookId={book.id} />
               </div>
             </div>
 

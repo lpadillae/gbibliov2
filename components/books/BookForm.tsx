@@ -7,20 +7,29 @@ import { Loader2, BookOpen } from "lucide-react";
 interface BookFormProps {
   initialIsbn?: string;
   incidenceId?: string;
+  initialData?: {
+    id: string;
+    title: string;
+    author: string;
+    isbn: string | null;
+    coverUrl: string | null;
+    description: string | null;
+    pageCount: number | null;
+  };
 }
 
-export function BookForm({ initialIsbn, incidenceId }: BookFormProps) {
+export function BookForm({ initialIsbn, incidenceId, initialData }: BookFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    title: "",
-    author: "",
-    isbn: initialIsbn || "",
-    coverUrl: "",
-    description: "",
-    pageCount: "",
+    title: initialData?.title || "",
+    author: initialData?.author || "",
+    isbn: initialData?.isbn || initialIsbn || "",
+    coverUrl: initialData?.coverUrl || "",
+    description: initialData?.description || "",
+    pageCount: initialData?.pageCount?.toString() || "",
   });
   const [fetching, setFetching] = useState(false);
 
@@ -61,8 +70,11 @@ export function BookForm({ initialIsbn, incidenceId }: BookFormProps) {
     setError(null);
 
     try {
-      const res = await fetch("/api/books", {
-        method: "POST",
+      const url = initialData ? `/api/books/${initialData.id}` : "/api/books";
+      const method = initialData ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
@@ -195,7 +207,7 @@ export function BookForm({ initialIsbn, incidenceId }: BookFormProps) {
           className="px-6 py-2.5 rounded-xl font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2 shadow-sm shadow-blue-600/20"
         >
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-          Save Book
+          {initialData ? "Update Book" : "Save Book"}
         </button>
       </div>
     </form>
