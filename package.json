@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "clean": "next clean",
     "db:setup": "npx prisma generate && npx prisma db push",
-    "railway:build": "node scripts/railway-build.js && npx prisma generate && npx prisma db push && next build"
+    "railway:build": "node scripts/railway-build.js && npx prisma generate && next build"
   },
   "dependencies": {
     "@google/genai": "^1.17.0",
