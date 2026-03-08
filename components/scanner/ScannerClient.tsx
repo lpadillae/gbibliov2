@@ -47,15 +47,15 @@ export function ScannerClient() {
   const fetchBookData = async (isbn: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const res = await fetch(`/api/metadata?isbn=${isbn}`);
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.error || "Failed to fetch book data");
       }
-      
+
       setBookData(data);
     } catch (err: any) {
       setError(err.message);
@@ -72,7 +72,7 @@ export function ScannerClient() {
 
   const handleSaveBook = async () => {
     if (!bookData) return;
-    
+
     setLoading(true);
     try {
       const res = await fetch("/api/books", {
@@ -80,9 +80,9 @@ export function ScannerClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookData),
       });
-      
+
       if (!res.ok) throw new Error("Failed to save book");
-      
+
       const savedBook = await res.json();
       router.push(`/library/${savedBook.id}`);
     } catch (err: any) {
@@ -162,9 +162,14 @@ export function ScannerClient() {
                 )}
               </div>
               <div className="flex-1">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{bookData.title}</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">{bookData.title}</h3>
+                  <span className="shrink-0 px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                    Source: {bookData.source}
+                  </span>
+                </div>
                 <p className="text-lg text-slate-600 dark:text-slate-300 mb-4">{bookData.author}</p>
-                
+
                 <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
                   <div>
                     <span className="block text-slate-500 dark:text-slate-400 mb-1">ISBN</span>

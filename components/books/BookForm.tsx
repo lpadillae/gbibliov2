@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, BookOpen } from "lucide-react";
 
 interface BookFormProps {
   initialIsbn?: string;
@@ -13,7 +13,7 @@ export function BookForm({ initialIsbn, incidenceId }: BookFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({
     title: "",
     author: "",
@@ -21,6 +21,38 @@ export function BookForm({ initialIsbn, incidenceId }: BookFormProps) {
     coverUrl: "",
     description: "",
     pageCount: "",
+  });
+  const [fetching, setFetching] = useState(false);
+
+  const fetchMetadata = async (isbn: string) => {
+    if (!isbn || isbn.length < 10) return;
+    setFetching(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/metadata?isbn=${isbn}`);
+      if (!res.ok) throw new Error("Could not find book metadata");
+      const data = await res.json();
+      setFormData({
+        ...formData,
+        title: data.title || formData.title,
+        author: data.author || formData.author,
+        isbn: data.isbn || formData.isbn,
+        coverUrl: data.coverUrl || formData.coverUrl,
+        description: data.description || formData.description,
+        pageCount: data.pageCount?.toString() || formData.pageCount,
+      });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  // Auto-fetch if initialIsbn is provided
+  useState(() => {
+    if (initialIsbn) {
+      fetchMetadata(initialIsbn);
+    }
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,7 +112,7 @@ export function BookForm({ initialIsbn, incidenceId }: BookFormProps) {
             placeholder="The Great Gatsby"
           />
         </div>
-        
+
         <div className="space-y-2">
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Author *</label>
           <input
@@ -95,13 +127,24 @@ export function BookForm({ initialIsbn, incidenceId }: BookFormProps) {
 
         <div className="space-y-2">
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">ISBN</label>
-          <input
-            type="text"
-            value={formData.isbn}
-            onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-            placeholder="9780743273565"
-          />
+          <div className="relative group">
+            <input
+              type="text"
+              value={formData.isbn}
+              onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all pr-12"
+              placeholder="9780743273565"
+            />
+            <button
+              type="button"
+              onClick={() => fetchMetadata(formData.isbn)}
+              disabled={fetching || !formData.isbn}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors disabled:opacity-30"
+              title="Fetch metadata"
+            >
+              {fetching ? <Loader2 className="w-5 h-5 animate-spin" /> : <BookOpen className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
 
         <div className="space-y-2">
