@@ -4,10 +4,11 @@ import { redirect } from "next/navigation";
 import { AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
+import { DeleteIncidenceButton } from "@/components/incidences/DeleteIncidenceButton";
 
 export default async function IncidencesPage() {
   const session = await getAuthSession();
-  
+
   if (!session) {
     redirect("/login");
   }
@@ -34,11 +35,10 @@ export default async function IncidencesPage() {
             {incidences.map((incidence) => (
               <div key={incidence.id} className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                 <div className="flex items-start gap-4">
-                  <div className={`mt-1 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    incidence.resolved 
-                      ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" 
-                      : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-                  }`}>
+                  <div className={`mt-1 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${incidence.resolved
+                    ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                    : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                    }`}>
                     {incidence.resolved ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
                   </div>
                   <div>
@@ -53,16 +53,19 @@ export default async function IncidencesPage() {
                     </span>
                   </div>
                 </div>
-                
-                {!incidence.resolved && (
-                  <Link 
-                    href={`/library/new?isbn=${incidence.isbn}&incidenceId=${incidence.id}`}
-                    className="shrink-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                  >
-                    Resolve Manually
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                )}
+
+                <div className="flex items-center gap-2">
+                  {!incidence.resolved && (
+                    <Link
+                      href={`/library/new?isbn=${incidence.isbn}&incidenceId=${incidence.id}`}
+                      className="shrink-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                    >
+                      Resolve Manually
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  )}
+                  <DeleteIncidenceButton incidenceId={incidence.id} />
+                </div>
               </div>
             ))}
           </div>

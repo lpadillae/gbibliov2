@@ -20,7 +20,12 @@ export function SettingsForm({ user }: SettingsFormProps) {
     username: user.username || "",
     isPublic: user.isPublic,
     primarySource: user.primarySource,
+    password: "",
+    confirmPassword: "",
   });
+
+  const appUrl = typeof window !== "undefined" ? window.location.origin : "";
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,11 +33,18 @@ export function SettingsForm({ user }: SettingsFormProps) {
     setError(null);
     setSuccess(false);
 
+    if (formData.password && formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
     try {
+      const { confirmPassword, ...submitData } = formData;
       const res = await fetch("/api/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
 
       if (!res.ok) {
@@ -56,7 +68,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
           {error}
         </div>
       )}
-      
+
       {success && (
         <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 p-4 rounded-xl text-sm">
           Settings updated successfully!
@@ -65,7 +77,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
 
       <div className="space-y-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2">Profile Information</h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Name</label>
@@ -76,22 +88,58 @@ export function SettingsForm({ user }: SettingsFormProps) {
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
             />
           </div>
-          
+
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Username</label>
-            <input
-              type="text"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-            />
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Public Handle (Username)</label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">@</span>
+              <input
+                type="text"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "") })}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                placeholder="my_library"
+              />
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1 ml-1">
+              Your profile: <span className="text-blue-600 dark:text-blue-400 break-all">{appUrl}/u/{formData.username || "username"}</span>
+            </p>
           </div>
         </div>
       </div>
 
       <div className="space-y-6">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2">Security</h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">New Password</label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Confirm Password</label>
+            <input
+              type="password"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              placeholder="••••••••"
+            />
+          </div>
+        </div>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Leave blank if you don&apos;t want to change your password.</p>
+      </div>
+
+      <div className="space-y-6">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-2">Preferences</h3>
-        
+
         <div className="space-y-4">
           <label className="flex items-center gap-3 cursor-pointer">
             <input

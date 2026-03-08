@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/auth";
+import bcrypt from "bcryptjs";
 
 export async function PATCH(req: Request) {
   const session = await getAuthSession();
-  
+
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
   }
 
   try {
     const body = await req.json();
-    const { name, username, isPublic, primarySource } = body;
+    const { name, username, isPublic, primarySource, password } = body;
 
     if (!username) {
       return new Response("Username is required", { status: 400 });
@@ -29,14 +30,20 @@ export async function PATCH(req: Request) {
       return new Response("Username is already taken", { status: 409 });
     }
 
+    const updateData: any = {
+      name,
+      username,
+      isPublic,
+      primarySource,
+    };
+
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
-      data: {
-        name,
-        username,
-        isPublic,
-        primarySource,
-      }
+      data: updateData
     });
 
     return NextResponse.json(updatedUser);
