@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  password      String?
+  image         String?
+  username      String?   @unique
+  
+  // Settings
+  isPublic      Boolean   @default(false)
+  primarySource String    @default("google") // google, openlibrary, etc.
+  
+  books         Book[]
+  incidences    Incidence[]
+}
+
+model Book {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title       String
+  author      String
+  isbn        String?
+  coverUrl    String?
+  description String?
+  pageCount   Int?
+  
+  status      String    @default("POR_LEER") // POR_LEER, LEYENDO, LEIDO, ABANDONADO
+  isPublic    Boolean   @default(true)
+  
+  rating      Int?
+  review      String?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  readAt      DateTime? // Timestamp when marked as read
+  
+  notes       Note[]
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  
+  content   String
+  pageRef   Int?
+  isQuote   Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Incidence {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  isbn      String
+  errorLog  String?
+  resolved  Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+}

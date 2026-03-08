@@ -1,0 +1,5 @@
+{
+  "name": "GBiblio",
+  "description": "A premium book management application ported to Next.js and React.",
+  "requestFramePermissions": ["camera"]
+}
