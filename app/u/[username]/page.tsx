@@ -4,9 +4,10 @@ import { BookCard } from "@/components/books/BookCard";
 import { BookOpen, User } from "lucide-react";
 import Image from "next/image";
 
-export default async function PublicProfilePage({ params }: { params: { username: string } }) {
+export default async function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
+  const resolvedParams = await params;
   const user = await prisma.user.findUnique({
-    where: { username: params.username },
+    where: { username: resolvedParams.username },
     include: {
       books: {
         where: { isPublic: true },

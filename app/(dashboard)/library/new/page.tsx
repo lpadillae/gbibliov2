@@ -5,10 +5,11 @@ import { BookForm } from "@/components/books/BookForm";
 export default async function NewBookPage({
   searchParams,
 }: {
-  searchParams: { isbn?: string; incidenceId?: string };
+  searchParams: Promise<{ isbn?: string; incidenceId?: string }>;
 }) {
   const session = await getAuthSession();
-  
+  const resolvedParams = await searchParams;
+
   if (!session) {
     redirect("/login");
   }
@@ -21,7 +22,7 @@ export default async function NewBookPage({
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-10 border border-slate-200 dark:border-slate-700 shadow-sm">
-        <BookForm initialIsbn={searchParams.isbn} incidenceId={searchParams.incidenceId} />
+        <BookForm initialIsbn={resolvedParams.isbn} incidenceId={resolvedParams.incidenceId} />
       </div>
     </div>
   );

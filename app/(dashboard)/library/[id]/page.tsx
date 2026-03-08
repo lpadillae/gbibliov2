@@ -7,16 +7,17 @@ import { ArrowLeft, Book as BookIcon, Calendar, Clock, Edit, Star, Trash2 } from
 import { BookStatusToggle } from "@/components/books/BookStatusToggle";
 import { format } from "date-fns";
 
-export default async function BookDetailsPage({ params }: { params: { id: string } }) {
+export default async function BookDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getAuthSession();
-  
+  const resolvedParams = await params;
+
   if (!session) {
     redirect("/login");
   }
 
   const book = await prisma.book.findUnique({
     where: {
-      id: params.id,
+      id: resolvedParams.id,
       userId: session.user.id,
     },
     include: {
@@ -135,7 +136,7 @@ export default async function BookDetailsPage({ params }: { params: { id: string
             Add Note
           </button>
         </div>
-        
+
         {book.notes.length > 0 ? (
           <div className="space-y-4">
             {book.notes.map((note) => (

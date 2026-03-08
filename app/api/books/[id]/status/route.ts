@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/auth";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getAuthSession();
-  
+  const resolvedParams = await params;
+
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
   }
@@ -18,7 +19,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 
     const book = await prisma.book.findUnique({
-      where: { id: params.id }
+      where: { id: resolvedParams.id }
     });
 
     if (!book || book.userId !== session.user.id) {
@@ -26,7 +27,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 
     const updateData: any = { status };
-    
+
     // Set readAt timestamp if status is changed to LEIDO
     if (status === "LEIDO" && book.status !== "LEIDO") {
       updateData.readAt = new Date();
@@ -35,7 +36,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 
     const updatedBook = await prisma.book.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: updateData
     });
 
