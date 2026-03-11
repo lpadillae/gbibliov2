@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, Library, Search, BarChart3, Settings, LogOut, AlertCircle } from "lucide-react";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { MobileMenu } from "@/components/dashboard/MobileMenu";
 
 export default async function DashboardLayout({
   children,
@@ -63,7 +64,7 @@ export default async function DashboardLayout({
             </div>
             <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">GBiblio</span>
           </div>
-          {/* Mobile menu button could go here */}
+          <MobileMenu />
         </header>
         <div className="flex-1 overflow-auto p-6 md:p-8">
           {children}
