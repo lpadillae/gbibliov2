@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Book as BookIcon, Calendar, Clock, Edit, Star, Trash2 } from "lucide-react";
 import { BookStatusToggle } from "@/components/books/BookStatusToggle";
 import { DeleteBookButton } from "@/components/books/DeleteBookButton";
+import { BookOpinions } from "@/components/books/BookOpinions";
 import { format } from "date-fns";
 
 export default async function BookDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -129,6 +130,10 @@ export default async function BookDetailsPage({ params }: { params: Promise<{ id
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mb-8">
+        <BookOpinions isbn={book.isbn} />
       </div>
 
       {/* Notes & Quotes Section */}
