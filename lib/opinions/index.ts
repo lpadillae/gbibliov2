@@ -41,10 +41,32 @@ async function fetchOpenLibraryOpinions(isbn: string): Promise<OpinionSource | n
     const data = await res.json();
     const bookKey = `ISBN:${isbn}`;
     const book = data[bookKey];
-    if (!book || !book.works || book.works.length === 0) return null;
+    if (!book) return null;
 
-    const workKey: string = book.works[0].key; // e.g. "/works/OL18020194W"
-    const workId = workKey.split("/").pop();
+    let workKey: string | undefined;
+    if (book.works && book.works.length > 0) {
+      workKey = book.works[0].key;
+    } else if (book.key) {
+      const editionRes = await fetch(`https://openlibrary.org${book.key}.json`, { next: { revalidate: 3600 } });
+      if (editionRes.ok) {
+        const edition = await editionRes.json();
+        if (edition.works && edition.works.length > 0) {
+          workKey = edition.works[0].key;
+        }
+      }
+    } else if (book.identifiers?.openlibrary?.[0]) {
+      const editionRes = await fetch(`https://openlibrary.org/books/${book.identifiers.openlibrary[0]}.json`, {
+        next: { revalidate: 3600 },
+      });
+      if (editionRes.ok) {
+        const edition = await editionRes.json();
+        if (edition.works && edition.works.length > 0) {
+          workKey = edition.works[0].key;
+        }
+      }
+    }
+
+    const workId = workKey?.split("/").pop();
     if (!workId) return null;
 
     const [ratingsRes, shelvesRes] = await Promise.all([
@@ -64,12 +86,20 @@ async function fetchOpenLibraryOpinions(isbn: string): Promise<OpinionSource | n
 
     if (shelvesRes.ok) {
       const shelves = await shelvesRes.json();
-      if (shelves.counts && Array.isArray(shelves.counts)) {
-        shelfCounts = shelves.counts
-          .filter((c: any) => typeof c.name === "string" && typeof c.count === "number")
-          .sort((a: any, b: any) => b.count - a.count)
-          .slice(0, 5)
-          .map((c: any) => ({ name: c.name, count: c.count }));
+      if (shelves.counts) {
+        if (Array.isArray(shelves.counts)) {
+          shelfCounts = shelves.counts
+            .filter((c: any) => typeof c.name === "string" && typeof c.count === "number")
+            .sort((a: any, b: any) => b.count - a.count)
+            .slice(0, 5)
+            .map((c: any) => ({ name: c.name, count: c.count }));
+        } else if (typeof shelves.counts === "object") {
+          shelfCounts = Object.entries(shelves.counts)
+            .filter(([, count]) => typeof count === "number")
+            .map(([name, count]) => ({ name, count: count as number }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
+        }
       }
     }
 
