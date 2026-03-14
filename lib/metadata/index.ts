@@ -57,7 +57,11 @@ async function fetchOpenLibrary(isbn: string): Promise<BookMetadata | null> {
       isbn: isbn,
       coverUrl: book.cover?.large || book.cover?.medium || book.cover?.small,
       description: description || book.subtitle || undefined,
-      pageCount: book.number_of_pages || book.pagination ? parseInt(book.pagination) : undefined,
+      pageCount: typeof book.number_of_pages === "number"
+        ? book.number_of_pages
+        : book.pagination
+          ? parseInt(book.pagination, 10)
+          : undefined,
       source: "openlibrary",
     };
   } catch (e) {

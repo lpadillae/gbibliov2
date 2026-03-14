@@ -7,6 +7,7 @@ import { ArrowLeft, Book as BookIcon, Calendar, Clock, Edit, Star, Trash2 } from
 import { BookStatusToggle } from "@/components/books/BookStatusToggle";
 import { DeleteBookButton } from "@/components/books/DeleteBookButton";
 import { BookOpinions } from "@/components/books/BookOpinions";
+import { BookQuotesPanel } from "@/components/books/BookQuotesPanel";
 import { format } from "date-fns";
 
 export default async function BookDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -144,6 +145,8 @@ export default async function BookDetailsPage({ params }: { params: Promise<{ id
             Add Note
           </button>
         </div>
+
+        <BookQuotesPanel isbn={book.isbn} notes={book.notes} />
 
         {book.notes.length > 0 ? (
           <div className="space-y-4">
